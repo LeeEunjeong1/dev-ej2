@@ -33,6 +33,11 @@ def slugify(title: str) -> str:
     return slug[:80].rstrip("-") or "post"
 
 
+def safe_path_segment(value: str) -> str:
+    segment = re.sub(r'[<>:"\\|?*\x00-\x1f]', "-", value).strip(" .")
+    return segment or "미분류"
+
+
 def fetch(session: requests.Session, url: str) -> str:
     for attempt in range(MAX_RETRIES):
         response = session.get(url, timeout=30, verify=VERIFY_SSL)
@@ -65,12 +70,19 @@ def meta(soup: BeautifulSoup, property_name: str) -> str:
     return str(node.get("content", "")).strip() if node else ""
 
 
-def render(url: str, html: str) -> tuple[str, str, str]:
+def render(url: str, html: str) -> tuple[str, Path, str]:
     soup = BeautifulSoup(html, "html.parser")
     identifier = urlparse(url).path.strip("/")
     title = meta(soup, "og:title") or soup.title.get_text(strip=True)
     published_raw = meta(soup, "article:published_time")
     published = datetime.fromisoformat(published_raw) if published_raw else datetime.now().astimezone()
+    category_node = soup.select_one(".hgroup .category")
+    category = category_node.get_text(" ", strip=True) if category_node else ""
+    if category in {"카테고리 없음", "분류 없음", "Uncategorized"}:
+        category = ""
+    category_parts = [safe_path_segment(part) for part in category.split("/") if part.strip()]
+    if not category_parts:
+        category_parts = ["미분류"]
 
     article = soup.select_one("#article-view .contents_style") or soup.select_one("#article-view")
     if article is None:
@@ -89,21 +101,33 @@ def render(url: str, html: str) -> tuple[str, str, str]:
         f"source: {yaml_string(url)}",
         f"tistory_id: {yaml_string(identifier)}",
         f"published: {yaml_string(published.isoformat())}",
+        f"category: {yaml_string(category or '미분류')}",
         "tags:",
         *[f"  - {yaml_string(tag)}" for tag in tags],
         "---",
         "",
     ]
     filename = f"{published:%Y-%m-%d}-{identifier}-{slugify(title)}.md"
-    return identifier, filename, "\n".join(frontmatter) + body + "\n"
+    return identifier, Path(*category_parts) / filename, "\n".join(frontmatter) + body + "\n"
 
 
 def remove_old_filename(identifier: str, keep: Path) -> None:
     expected = f'tistory_id: "{identifier}"'
-    for existing in POSTS_DIR.glob("*.md"):
+    for existing in POSTS_DIR.rglob("*.md"):
         if existing != keep and expected in existing.read_text(encoding="utf-8"):
             existing.unlink()
             print(f"Removed renamed file {existing.relative_to(POSTS_DIR.parent)}")
+
+
+def remove_empty_category_dirs() -> None:
+    directories = sorted(
+        (path for path in POSTS_DIR.rglob("*") if path.is_dir()),
+        key=lambda path: len(path.parts),
+        reverse=True,
+    )
+    for directory in directories:
+        if not any(directory.iterdir()):
+            directory.rmdir()
 
 
 def main() -> None:
@@ -115,9 +139,10 @@ def main() -> None:
 
     POSTS_DIR.mkdir(parents=True, exist_ok=True)
     for index, url in enumerate(urls, start=1):
-        identifier, filename, content = render(url, fetch(session, url))
-        target = POSTS_DIR / filename
+        identifier, relative_path, content = render(url, fetch(session, url))
+        target = POSTS_DIR / relative_path
         remove_old_filename(identifier, target)
+        target.parent.mkdir(parents=True, exist_ok=True)
         if not target.exists() or target.read_text(encoding="utf-8") != content:
             target.write_text(content, encoding="utf-8")
             print(f"Updated {target.relative_to(POSTS_DIR.parent)}")
@@ -125,6 +150,7 @@ def main() -> None:
         if REQUEST_DELAY:
             time.sleep(REQUEST_DELAY)
 
+    remove_empty_category_dirs()
     print(f"Public posts processed: {len(urls)}")
 
 
