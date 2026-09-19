@@ -2,9 +2,8 @@
 title: "Suppressing notification from package com.example.coco by user request"
 source: "https://dev-ej2.tistory.com/106"
 tistory_id: "106"
-published: "2024-05-21T02:00:00"
+published: "2024-05-21T11:00:00+09:00"
 tags:
-  - "IT/Error"
 ---
 android13 알림 권한 설정 문제
 

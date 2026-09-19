@@ -2,9 +2,8 @@
 title: "com.google.gson.stream.MalformedJsonException: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $"
 source: "https://dev-ej2.tistory.com/104"
 tistory_id: "104"
-published: "2024-05-20T02:20:44"
+published: "2024-05-20T11:20:44+09:00"
 tags:
-  - "IT/Error"
 ---
 com.google.gson.stream.MalformedJsonException: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $  
   

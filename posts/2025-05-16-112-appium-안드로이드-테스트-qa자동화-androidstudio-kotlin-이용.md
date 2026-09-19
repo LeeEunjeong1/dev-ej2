@@ -2,9 +2,8 @@
 title: "Appium - 안드로이드 테스트 QA자동화 (AndroidStudio+kotlin 이용)"
 source: "https://dev-ej2.tistory.com/112"
 tistory_id: "112"
-published: "2025-05-16T04:50:17"
+published: "2025-05-16T13:50:17+09:00"
 tags:
-  - "IT/Android"
 ---
 안드로이드 개발자가 QA 자동화 툴을 직접 다룰 일은 흔치 않지만.. QA팀에서 자동화 R&D 요청이 들어와 오픈소스인 Appium을 적용해봤습니다.
 
@@ -13,7 +12,7 @@ tags:
 **Appium**은 모바일 앱 테스트를 자동화할 수 있는 오픈소스 프레임워크입니다.  
 Android뿐 아니라 iOS도 지원하며, Selenium 기반으로 작동합니다.
 
-> 안드로이드는 내부적으로 UiAutomator2를 활용해 실제 기기에서 동작하게 됩니다.
+> 💡 안드로이드는 내부적으로 UiAutomator2를 활용해 실제 기기에서 동작하게 됩니다.
 
 ## 
 
@@ -149,7 +148,7 @@ application {
 }
 ```
 
-> Gradle 버전이 낮을 경우 Appium Java Client 8.x에서 오류가 날 수 있으니 최소 Gradle 7 이상을 권장합니다.
+> 💡 Gradle 버전이 낮을 경우 Appium Java Client 8.x에서 오류가 날 수 있으니 최소 Gradle 7 이상을 권장합니다.
 
 ## Kotlin Appium 테스트 코드
 

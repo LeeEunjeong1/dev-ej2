@@ -2,9 +2,8 @@
 title: "com.google.gson.JsonIOException: JSON document was not fully consumed."
 source: "https://dev-ej2.tistory.com/105"
 tistory_id: "105"
-published: "2024-05-20T02:26:13"
+published: "2024-05-20T11:26:13+09:00"
 tags:
-  - "IT/Error"
 ---
 com.google.gson.JsonIOException: JSON document was not fully consumed.
 

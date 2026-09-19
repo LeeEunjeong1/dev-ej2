@@ -2,9 +2,8 @@
 title: "android / fcm notification (background data 컨트롤, 다국어 대응)"
 source: "https://dev-ej2.tistory.com/107"
 tistory_id: "107"
-published: "2024-06-10T07:02:51"
+published: "2024-06-10T16:02:51+09:00"
 tags:
-  - "IT/Android"
 ---
 1. background data 컨트롤
 
@@ -159,7 +158,7 @@ github.com](https://github.com/CrossGeeks/FirebasePushNotificationPlugin/blob/ma
 
 그래서.. (꼼수를 쓴게...)
 
-메세지를 받는 시점인 handleIntent 메서드 안에서 언어 설정을 해주었다.
+메세지를 받는 시점인 handleIntent 메서드 안에서 언어 설정을 해주었다.
 
 ```
 override fun handleIntent(intent: Intent?) {
