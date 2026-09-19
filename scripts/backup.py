@@ -20,7 +20,8 @@ BLOG_URL = os.environ.get("TISTORY_BLOG_URL", "https://dev-ej2.tistory.com").rst
 SITEMAP_URL = os.environ.get("TISTORY_SITEMAP_URL", f"{BLOG_URL}/sitemap.xml")
 POSTS_DIR = Path(__file__).resolve().parents[1] / "posts"
 VERIFY_SSL = os.environ.get("TISTORY_VERIFY_SSL", "true").lower() != "false"
-REQUEST_DELAY = float(os.environ.get("TISTORY_REQUEST_DELAY", "0.15"))
+REQUEST_DELAY = float(os.environ.get("TISTORY_REQUEST_DELAY", "1.0"))
+MAX_RETRIES = int(os.environ.get("TISTORY_MAX_RETRIES", "6"))
 
 
 def yaml_string(value: str) -> str:
@@ -33,9 +34,19 @@ def slugify(title: str) -> str:
 
 
 def fetch(session: requests.Session, url: str) -> str:
-    response = session.get(url, timeout=30, verify=VERIFY_SSL)
+    for attempt in range(MAX_RETRIES):
+        response = session.get(url, timeout=30, verify=VERIFY_SSL)
+        if response.status_code not in {429, 500, 502, 503, 504}:
+            response.raise_for_status()
+            return response.text
+
+        retry_after = response.headers.get("Retry-After", "")
+        delay = float(retry_after) if retry_after.isdigit() else min(5 * (2**attempt), 60)
+        print(f"HTTP {response.status_code} for {url}; retrying in {delay:g}s")
+        time.sleep(delay)
+
     response.raise_for_status()
-    return response.text
+    raise RuntimeError(f"Unable to fetch after {MAX_RETRIES} attempts: {url}")
 
 
 def post_urls(session: requests.Session) -> list[str]:
